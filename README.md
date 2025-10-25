@@ -1,6 +1,6 @@
 # Spookie Cookie
 
-Aplicación web desarrollada con Next.js para la gestión de una repostería. Permite administrar productos, clientes y pedidos desde una interfaz moderna y sencilla. Conecta con una base de datos mediante Prisma o Mongoose para optimizar el control de inventario y ventas.
+Aplicación web desarrollada con Next.js para la gestión de una repostería. Permite administrar productos, clientes y pedidos desde una interfaz moderna y sencilla. Conecta con una base de datos para optimizar el control de inventario y ventas.
 
 ## Instalación
 
