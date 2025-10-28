@@ -18,7 +18,7 @@ export default function HomePage() {
       <header className="header">
         <div className="logo">🍪 <span>SpookyCookie</span></div>
         <nav className="nav">
-          <a className="pill ghost" href="#">Menu</a>
+          <a className="pill ghost" href="/menu">Menu</a>
           <a className="pill outline" href="/contacto">Contacto</a>
           {usuario ? (
             <button

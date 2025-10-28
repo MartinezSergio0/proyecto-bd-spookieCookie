@@ -2,7 +2,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Mi App",
+  title: "Spooky Cookie",
 };
 
 export default function RootLayout({ children }) {
