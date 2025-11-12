@@ -11,59 +11,56 @@ npm install
 ## Comandos sql para la creacion de la base de datos
 
 ```sql
--- Crear la base de datos
-CREATE DATABASE IF NOT EXISTS reposteria;
-USE reposteria;
-
--- Tabla de clientes
+-- Tabla: cliente
 CREATE TABLE cliente (
-  id_cliente INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  telefono VARCHAR(15),
-  correo VARCHAR(50) UNIQUE,
-  direccion VARCHAR(100),
-  rol ENUM('cliente','admin') NOT NULL DEFAULT 'cliente'
+    id_cliente INT(11) NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL,
+    telefono VARCHAR(15),
+    correo VARCHAR(50) UNIQUE,
+    direccion VARCHAR(100),
+    rol ENUM('cliente', 'admin') NOT NULL DEFAULT 'cliente',
+    contraseña VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id_cliente)
 );
 
--- Tabla de decoraciones
-CREATE TABLE decoracion (
-  id_decoracion INT AUTO_INCREMENT PRIMARY KEY,
-  estilo VARCHAR(50),
-  color_principal VARCHAR(50),
-  forma VARCHAR(50),
-  notas VARCHAR(100)
-);
-
--- Tabla de productos
+-- Tabla: producto
 CREATE TABLE producto (
-  id_producto INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  descripcion VARCHAR(100) NOT NULL,
-  precio_base DECIMAL(10,2) NOT NULL,
-  tipo VARCHAR(50) NOT NULL
+    id_producto INT(11) NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255) NOT NULL,
+    precio_base DECIMAL(6,2) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    ingredientes LONGTEXT NOT NULL,
+    imagen VARCHAR(150),
+    PRIMARY KEY (id_producto)
 );
 
--- Tabla de pedidos
+-- Tabla: pedido
 CREATE TABLE pedido (
-  id_pedido INT AUTO_INCREMENT PRIMARY KEY,
-  id_cliente INT NOT NULL,
-  fecha_pedido DATE NOT NULL,
-  fecha_entrega DATE NOT NULL,
-  estado VARCHAR(20),
-  id_decoracion INT NOT NULL,
-  FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
-  FOREIGN KEY (id_decoracion) REFERENCES decoracion(id_decoracion)
+    id_pedido INT(11) NOT NULL AUTO_INCREMENT,
+    id_cliente INT(11) NOT NULL,
+    fecha_pedido DATE NOT NULL,
+    estado_pago ENUM('PAGADO', 'NO_PAGADO') NOT NULL DEFAULT 'NO_PAGADO',
+    PRIMARY KEY (id_pedido),
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
--- Tabla de detalle de pedidos
+-- Tabla: detalle_pedido
 CREATE TABLE detalle_pedido (
-  id_detalle INT AUTO_INCREMENT PRIMARY KEY,
-  id_pedido INT NOT NULL,
-  id_producto INT NOT NULL,
-  cantidad INT NOT NULL,
-  precio_unitario DECIMAL(10,2) NOT NULL,
-  FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido),
-  FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+    id_detalle INT(11) NOT NULL AUTO_INCREMENT,
+    id_pedido INT(11) NOT NULL,
+    id_producto INT(11) NOT NULL,
+    cantidad INT(11) NOT NULL,
+    precio_unitario DECIMAL(6,2) NOT NULL,
+    PRIMARY KEY (id_detalle),
+    FOREIGN KEY (id_pedido) REFERENCES pedido(id_pedido)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 ```
 

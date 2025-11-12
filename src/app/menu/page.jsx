@@ -5,16 +5,37 @@ import Image from "next/image";
 
 export default function MenuPage() {
   const [activeCategory, setActiveCategory] = useState("todas");
+  const [menuItems, setMenuItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [user, setUser] = useState(null);
   const router = useRouter();
 
-  // Verificar si el usuario está logueado al cargar el componente
+  // Obtener productos desde la API
+  useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const res = await fetch("/api/clientes/productos");
+        if (!res.ok) throw new Error("Error al obtener productos");
+        const data = await res.json();
+        setMenuItems(data.productos || []);
+      } catch (error) {
+        console.error("Error al cargar productos:", error);
+      }
+    };
+    fetchProductos();
+  }, []);
+
+  // Verificar si el usuario está logueado y cargar el carrito al cargar el componente
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem("usuario");
+      const storedCart = localStorage.getItem("spookyCart");
+      
       if (storedUser) {
         setUser(JSON.parse(storedUser));
+      }
+      if (storedCart) {
+        setCart(JSON.parse(storedCart));
       }
     };
     checkAuth();
@@ -28,28 +49,6 @@ export default function MenuPage() {
     { id: "veganas", name: "Veganas" }
   ];
 
-  const menuItems = [
-    {
-      id: 1,
-      name: "Spooky Chocolate",
-      price: 4.99,
-      category: "clasicas",
-      description: "Galleta de chocolate con fantásticos chips y un toque de canela misteriosa.",
-      ingredients: ["Chocolate", "Canela", "Harina", "Mantequilla"],
-      image: "/chocolate-cookie.png"
-    },
-    {
-      id: 2,
-      name: "Fantasma de Vainilla",
-      price: 5.49,
-      category: "especiales",
-      description: "Suave galleta de vainilla con forma de fantasma y relleno cremoso.",
-      ingredients: ["Vainilla", "Azúcar", "Harina", "Crema"],
-      image: "/vanilla-ghost.png"
-    },
-    // ... resto de los items
-  ];
-
   const filteredItems = activeCategory === "todas" 
     ? menuItems 
     : menuItems.filter(item => item.category === activeCategory);
@@ -61,14 +60,31 @@ export default function MenuPage() {
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      updatedCart.push({ ...item, quantity: 1 });
+      updatedCart.push({ 
+        ...item, 
+        quantity: 1,
+        precio: item.price,
+        nombre: item.name,
+        descripcion: item.description,
+        imagen: item.image,
+        tipo: item.category
+      });
     }
     
     setCart(updatedCart);
     localStorage.setItem("spookyCart", JSON.stringify(updatedCart));
+    
+    // Efecto visual de añadir al carrito
+    const button = document.querySelector(`[data-item-id="${item.id}"]`);
+    if (button) {
+      button.classList.add('added-to-cart');
+      setTimeout(() => {
+        button.classList.remove('added-to-cart');
+      }, 1000);
+    }
   };
 
-  const totalItemsInCart = cart.reduce((total, item) => total + item.quantity, 0);
+  const totalItemsInCart = cart.reduce((total, item) => total + (item.quantity || 1), 0);
 
   const handleLogout = () => {
     localStorage.removeItem("usuario");
@@ -86,16 +102,23 @@ export default function MenuPage() {
         </a>
         <nav className="nav">
           <button className="pill primary">Menu</button>
-          <button className="pill ghost">Contacto</button>
+          <button 
+            className="pill ghost"
+            onClick={() => router.push("/contact")}
+          >
+            Contacto
+          </button>
           
-          {/* Icono del carrito */}
           <button 
             className="cart-icon-btn"
             onClick={() => router.push("/cart")}
+            title="Ver carrito"
           >
             <span className="cart-icon">🛒</span>
             {totalItemsInCart > 0 && (
-              <span className="cart-badge">{totalItemsInCart}</span>
+              <span className="cart-badge">
+                {totalItemsInCart > 99 ? '99+' : totalItemsInCart}
+              </span>
             )}
           </button>
 
@@ -167,11 +190,11 @@ export default function MenuPage() {
               <div className="item-content">
                 <div className="item-header">
                   <h3 className="item-name">{item.name}</h3>
-                  <div className="item-price">${item.price}</div>
+                  <div className="item-price">${item.price.toFixed(2)}</div>
                 </div>
                 <p className="item-description">{item.description}</p>
                 <div className="item-ingredients">
-                  {item.ingredients.map((ingredient, index) => (
+                  {item.ingredients?.map((ingredient, index) => (
                     <span key={index} className="ingredient-tag">{ingredient}</span>
                   ))}
                 </div>
@@ -179,6 +202,7 @@ export default function MenuPage() {
                   <button 
                     className="btn btn-primary btn-small"
                     onClick={() => addToCart(item)}
+                    data-item-id={item.id}
                   >
                     Añadir al Carrito
                   </button>

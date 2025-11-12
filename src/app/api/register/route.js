@@ -26,7 +26,7 @@ export async function POST(req) {
       JSON.stringify({ 
         success: true, 
         message: "Usuario registrado correctamente", 
-        id: result.insertId.toString() // <-- convierte BigInt a string
+        id: result.insertId.toString() 
       }),
       { status: 201 }
     );

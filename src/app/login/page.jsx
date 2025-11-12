@@ -22,6 +22,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.success) {
+        const rol = data.cliente.rol;
+        const token = btoa(JSON.stringify({ rol, timestamp: Date.now() }));
+        localStorage.setItem("token", token);
         localStorage.setItem("usuario", JSON.stringify(data.cliente));
         if (data.cliente.rol === "admin") {
           router.push("/admin/dashboard");

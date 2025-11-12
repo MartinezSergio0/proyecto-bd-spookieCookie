@@ -5,7 +5,7 @@ export async function POST(req) {
   try {
     const { usuario, password } = await req.json();
 
-    const connTemp = await pool("admin").getConnection();
+    const connTemp = await pool("cliente").getConnection();
     const rows = await connTemp.query(
       "SELECT * FROM cliente WHERE correo = ? OR nombre = ? LIMIT 1",
       [usuario, usuario]
