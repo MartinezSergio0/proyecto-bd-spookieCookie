@@ -61,57 +61,56 @@ export default function CartPage() {
 
   const totalItems = cart.reduce((total, item) => total + (item.quantity || 1), 0);
 
-const handleCheckout = async () => {
-  if (!user) {
-    router.push("/login?redirect=cart");
-    return;
-  }
+  const handleCheckout = async () => {
+    if (!user) {
+      router.push("/login?redirect=cart");
+      return;
+    }
 
-  if (cart.length === 0) {
-    alert("Tu carrito está vacío");
-    return;
-  }
+    if (cart.length === 0) {
+      alert("Tu carrito está vacío");
+      return;
+    }
 
-  try {
-    setIsLoading(true);
-    const pedidoData = {
-      id_cliente: user.id_cliente,
-      fecha_pedido: new Date().toISOString().split("T")[0],
-      estado_pago: "NO_PAGADO" 
-    };
+    try {
+      setIsLoading(true);
 
-    const nuevoPedido = {
-      id_pedido: Math.floor(Math.random() * 1000),
-      ...pedidoData
-    };
+      // Datos del pedido
+      const pedidoData = {
+        id_cliente: user.id_cliente,
+        fecha_pedido: new Date().toISOString().split("T")[0],
+        estado_pago: "NO_PAGADO",
+        detalles: cart.map((item) => ({
+          id_producto: item.id,
+          cantidad: item.quantity || 1,
+          precio_unitario: getItemPrice(item),
+        })),
+      };
 
-    const detallePedido = cart.map((item) => ({
-      id_pedido: nuevoPedido.id_pedido,
-      id_producto: item.id,
-      cantidad: item.quantity || 1,
-      precio_unitario: getItemPrice(item)
-    }));
+      const response = await fetch("/api/clientes/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pedidoData),
+      });
 
-    console.log("Pedido creado:", nuevoPedido);
-    console.log("Detalles:", detallePedido);
+      const data = await response.json();
 
-    nuevoPedido.estado_pago = "PAGADO";
+      if (!response.ok) throw new Error(data.message || "Error en el servidor");
 
-    console.log("Estado actualizado del pedido:", nuevoPedido.estado_pago);
-
-    clearCart();
-    alert(
-      `¡Pedido confirmado! #${nuevoPedido.id_pedido}\nTotal: $${cartSubtotal.toFixed(
-        2
-      )}`
-    );
-  } catch (error) {
-    console.error("Error durante el checkout:", error);
-    alert("Error al procesar el pedido. Por favor, intenta nuevamente.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // Confirmación
+      clearCart();
+      alert(
+        `¡Pedido confirmado! #${data.id_pedido}\nTotal: $${cartSubtotal.toFixed(
+          2
+        )}`
+      );
+    } catch (error) {
+      console.error("Error durante el checkout:", error);
+      alert("Error al procesar el pedido. Por favor, intenta nuevamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   const continueShopping = () => router.push("/menu");
